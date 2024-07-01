@@ -1,21 +1,43 @@
 import { View, Text, Image, TextInput, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import React, { useLayoutEffect } from 'react'
+import React, { useLayoutEffect, useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { UserIcon, ChevronDownIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from 'react-native-heroicons/outline'
 import Categories from '../components/Categories'
-import FeaturedRow from '../components/FeaturedRow'
+import FeaturedRow from '../components/FeaturedRow' 
+import client from '../sanity'
 
 const HomeScreen = () => {
 
   const navigation = useNavigation();
+  const [FeaturedCategories, setFeaturedCategories] = useState([]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
-
   }, []);
+
+
+  useEffect(() => {
+    client.fetch(
+      `*[_type == "featured"]{
+        ...,
+        restaurants[]->{
+          ...,
+          dishes[]->{
+            ...,
+            type[]->{
+              name
+            }
+          }
+        }
+      }`
+    ).then((data) => {
+      setFeaturedCategories(data);
+   })
+  }, [])
+  
 
   return (
     // something kinda wrong with SafeAreaView, has weird padding on bottom
